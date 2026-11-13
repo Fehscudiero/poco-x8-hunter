@@ -1,4 +1,4 @@
-// scrapers/mercadolivre.js - Scraper Mercado Livre via Stealth
+// scrapers/mercadolivre.js - Scraper de Elite Mercado Livre (Menor Preço & Descontos)
 const puppeteer = require('puppeteer-extra');
 const StealthPlugin = require('puppeteer-extra-plugin-stealth');
 const fs = require('fs');
@@ -10,28 +10,18 @@ function getBrowserPath() {
   return fs.existsSync(chrome) ? chrome : (fs.existsSync(edge) ? edge : undefined);
 }
 
-async function scrapeMercadoLivre(searchQuery) {
-  const slug = encodeURIComponent(searchQuery.trim().replace(/\s+/g, '-'));
-  const url = `https://lista.mercadolivre.com.br/${slug}`;
-  let browser = null;
+async function scrapeTab(page, url) {
   try {
-    browser = await puppeteer.launch({
-      executablePath: getBrowserPath(),
-      headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
-    });
-    const page = await browser.newPage();
-    try {
-      await page.goto(url, { waitUntil: 'networkidle2', timeout: 25000 });
-    } catch (_) {}
-    await page.waitForSelector('.poly-card, .ui-search-layout__item', { timeout: 10000 });
-
-    const items = await page.evaluate(() => {
+    await page.goto(url, { waitUntil: 'domcontentloaded', timeout: 25000 });
+    await page.waitForSelector('.poly-card, .ui-search-layout__item, .andes-money-amount', { timeout: 10000 });
+    return await page.evaluate(() => {
       const list = [];
       document.querySelectorAll('.poly-card, .ui-search-layout__item').forEach((card, idx) => {
         const titleEl = card.querySelector('.poly-component__title, .ui-search-item__title');
-        const priceEl = card.querySelector('.andes-money-amount__fraction');
-        const centsEl = card.querySelector('.andes-money-amount__cents');
+        // Captura o preço REAL com desconto, NUNCA o preço riscado anterior
+        const currentWrap = card.querySelector('.poly-price__current, .andes-money-amount-combo__main-container') || card;
+        const priceEl = currentWrap.querySelector('.andes-money-amount__fraction') || card.querySelector('.andes-money-amount:not(.andes-money-amount--previous) .andes-money-amount__fraction');
+        const centsEl = currentWrap.querySelector('.andes-money-amount__cents') || card.querySelector('.andes-money-amount:not(.andes-money-amount--previous) .andes-money-amount__cents');
         const linkEl = card.querySelector('a');
         const imgEl = card.querySelector('img');
         const isFull = !!card.querySelector('.poly-component__shipped-from, .ui-search-item__fulfillment');
@@ -39,9 +29,9 @@ async function scrapeMercadoLivre(searchQuery) {
         if (titleEl && priceEl) {
           const raw = priceEl.innerText.trim().replace(/\./g, '') + (centsEl ? '.' + centsEl.innerText.trim() : '');
           const price = parseFloat(raw);
-          if (!isNaN(price)) {
+          if (!isNaN(price) && price >= 800) {
             list.push({
-              id: `mlb-${idx}-${Date.now()}`,
+              id: `mlb-${idx}-${Date.now()}-${Math.floor(Math.random()*1000)}`,
               marketplace: 'Mercado Livre',
               title: titleEl.innerText.trim(),
               price,
@@ -55,8 +45,32 @@ async function scrapeMercadoLivre(searchQuery) {
       });
       return list;
     });
+  } catch (_) { return []; }
+}
 
-    return items.map(item => ({
+async function scrapeMercadoLivre(searchQuery) {
+  let browser = null;
+  try {
+    browser = await puppeteer.launch({
+      executablePath: getBrowserPath(),
+      headless: 'new',
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    const page1 = await browser.newPage();
+    const page2 = await browser.newPage();
+    const slug = encodeURIComponent(searchQuery.trim().replace(/\s+/g, '-'));
+
+    // Varre Menor Preço e Relevância em abas simultâneas
+    const ascUrl = `https://lista.mercadolivre.com.br/${slug}_OrderId_PRICE_ASC_NoIndex_True`;
+    const stdUrl = `https://lista.mercadolivre.com.br/${slug}`;
+
+    const [ascItems, stdItems] = await Promise.all([
+      scrapeTab(page1, ascUrl),
+      scrapeTab(page2, stdUrl)
+    ]);
+
+    const combined = [...ascItems, ...stdItems];
+    return combined.map(item => ({
       ...item,
       priceFormatted: `R$ ${item.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
       scrapedAt: new Date().toISOString()
