@@ -3,3 +3,5 @@ node_modules/
 *.log
 ml_sample.html
 ml_search.html
+
+.vercel
