@@ -171,16 +171,23 @@ async function loadHistory() {
     const res = await fetch('/api/history');
     const data = await res.json();
     const tbody = document.getElementById('historyTableBody');
-    if (!data.history || data.history.length === 0) return;
+    const validHistory = (data.history || []).filter(h => {
+      const t = (h.bestDeal?.title || '').toLowerCase();
+      return t.includes('poco') && t.includes('x8') && t.includes('256');
+    });
+    if (validHistory.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-slate-500">Nenhuma varredura registrada ainda.</td></tr>';
+      return;
+    }
 
-    tbody.innerHTML = data.history.slice(-8).reverse().map(h => `
+    tbody.innerHTML = validHistory.slice(-8).reverse().map(h => `
       <tr class="hover:bg-slate-800/40 transition">
         <td class="py-2.5 px-3 font-mono text-slate-400">${new Date(h.timestamp).toLocaleTimeString('pt-BR')}</td>
-        <td class="py-2.5 px-3 truncate max-w-[150px]">${h.query}</td>
-        <td class="py-2.5 px-3 font-bold text-emerald-400">R$ ${h.bestDeal ? h.bestDeal.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 }) : '--'}</td>
-        <td class="py-2.5 px-3">${h.bestDeal ? h.bestDeal.marketplace : '--'}</td>
+        <td class="py-2.5 px-3 truncate max-w-[200px] text-white font-medium">${h.bestDeal.title}</td>
+        <td class="py-2.5 px-3 font-bold text-emerald-400">R$ ${h.bestDeal.price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+        <td class="py-2.5 px-3">${h.bestDeal.marketplace}</td>
         <td class="py-2.5 px-3 text-right">
-          ${h.bestDeal ? `<a href="${h.bestDeal.link}" target="_blank" class="text-orange-400 hover:underline">Abrir</a>` : '-'}
+          <a href="${h.bestDeal.link}" target="_blank" class="text-orange-400 hover:underline font-semibold">Abrir</a>
         </td>
       </tr>
     `).join('');
