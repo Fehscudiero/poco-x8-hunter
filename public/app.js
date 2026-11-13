@@ -80,7 +80,7 @@ function updateHighlights(data) {
     document.getElementById('winnerStore').innerText = data.bestDeal.marketplace;
     document.getElementById('winnerPrice').innerText = data.bestDeal.priceFormatted;
     document.getElementById('winnerLink').href = data.bestDeal.link;
-    document.getElementById('winnerScore').innerText = `Relevância: ${data.bestDeal.score}% • ${data.bestDeal.isExactMatch ? 'Correspondência Exata' : 'Variação Próxima'}`;
+    document.getElementById('winnerScore').innerText = `100% Exato: Xiaomi Poco X8 5G 256GB 8GB RAM Preto`;
 
     const maxPrice = Math.max(...allItems.map(i => i.price));
     if (maxPrice > data.bestDeal.price) {

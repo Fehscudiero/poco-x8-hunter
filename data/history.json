@@ -26,5 +26,33 @@
     },
     "amazonLowest": 1889.55,
     "mlLowest": 2250.26
+  },
+  {
+    "id": "hunt-1794609020265",
+    "timestamp": "2026-11-13T22:30:20.265Z",
+    "query": "Xiaomi Poco X8 5g 256gb Dual Sim 8gb Ram Preto",
+    "totalItems": 29,
+    "bestDeal": {
+      "title": "Smartphone Xiaomi Poco X8 Pro 256GB / 8GB Ram (Preto)",
+      "price": 2659.87,
+      "marketplace": "Amazon",
+      "link": "https://www.amazon.com.br/Smartphone-Xiaomi-X8-Pro-256GB/dp/B0GQC19Y8D/ref=sr_1_2?dib=eyJ2IjoiMSJ9.hKS6ltCszfkG8BvCJioTxS_lGIbDjAMqF7WsaKQ3N1fg_WatZ7dEx-_jkZV3MRk6tiLHlovQEHYvyVY5nnJfjEojvT7QfU3WX3XFJ3lSmnqRAwUTqjC4etrEP45VtzLXM9c7WGe89iqfGgHxoFO2t5scwzKkN_7D-QEKN7jXpJBUYsIGD2_ViA2tUtKMGvlgn7VOJBdBcTQXVtrNLs4EWES2mORAvWWvz76buzhkIng8_4XS4PXcLqO14uJ_GEcvC6So9Ya6ccYJahNyM50RM1lV_v2sEUAVoh3sexMOX7M.8NtiND5uo5isyqVRlGidlDqHkdQtteDcHB04UAg70YU&dib_tag=se&keywords=Poco+X8+256GB+preto&qid=1794609009&sr=8-2&ufe=app_do%3Aamzn1.fos.95de73c3-5dda-43a7-bd1f-63af03b14751"
+    },
+    "amazonLowest": 2659.87,
+    "mlLowest": 2799.03
+  },
+  {
+    "id": "hunt-1794609083202",
+    "timestamp": "2026-11-13T22:31:23.202Z",
+    "query": "Xiaomi Poco X8 5g 256gb Dual Sim 8gb Ram Preto",
+    "totalItems": 28,
+    "bestDeal": {
+      "title": "Celular Xiaomi Poco X8 Pro 8gb Ram 256gb Rom Dual Sim 6.59 Amoled Dimensity 8500 Ultra Black",
+      "price": 2799.03,
+      "marketplace": "Mercado Livre",
+      "link": "https://www.mercadolivre.com.br/celular-xiaomi-poco-x8-pro-8gb-ram-256gb-rom-dual-sim-659-amoled-dimensity-8500-ultra-black/p/MLB67146537#polycard_client=search-desktop&float_highlight=last_units&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=4&type=product&tracking_id=8df598f2-9fbf-4ab6-b59c-4d7dd21a1873&overlay_label_capability=not_apply&wid=MLB5174743801&sid=search"
+    },
+    "amazonLowest": null,
+    "mlLowest": 2799.03
   }
 ]
