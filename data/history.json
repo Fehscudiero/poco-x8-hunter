@@ -1,0 +1,30 @@
+[
+  {
+    "id": "hunt-1794608796705",
+    "timestamp": "2026-11-13T22:26:36.705Z",
+    "query": "Xiaomi Poco X7 5g 256gb preto",
+    "totalItems": 135,
+    "bestDeal": {
+      "title": "Xiaomi Poco X7 5g 256gb",
+      "price": 1500.29,
+      "marketplace": "Mercado Livre",
+      "link": "https://www.mercadolivre.com.br/xiaomi-poco-x7-5g-256gb/up/MLBU5845311639#polycard_client=search-desktop&be_origin=backend&overlay_label=not_apply&search_layout=grid&position=20&type=product&tracking_id=e6fbdaa7-5a14-4b58-b787-3f8c732c52e6&overlay_label_capability=not_apply&wid=MLB5551185229&sid=search"
+    },
+    "amazonLowest": 1889.55,
+    "mlLowest": 1500.29
+  },
+  {
+    "id": "hunt-1794608813224",
+    "timestamp": "2026-11-13T22:26:53.224Z",
+    "query": "Celular Xiaomi Poco X8 5g 256gb Dual Sim 8gb Ram Preto",
+    "totalItems": 142,
+    "bestDeal": {
+      "title": "Xiaomi Poco M8 5G 8gb RAM 256GB Preto NFC",
+      "price": 1889.55,
+      "marketplace": "Amazon",
+      "link": "https://www.amazon.com.br/Xiaomi-Poco-8gb-256GB-Preto/dp/B0GQCVQG83/ref=sr_1_5?dib=eyJ2IjoiMSJ9.90cIqrYwKlOUgyYuJpoTbSx1YoAJQSlqyR7FiTtyO4m7Omlj6_76Ku5fzQVpKb23mEqbK9fEqBqJRRjA5HB9c6IY5Prwu2WKJ4ytws2yuTnf4gDAJXKfvbRY_Zojcgemb2FgZJpG1hGoyHcRcZzcI1BU7gN1xoC7fOuEBqQdLLxKlqVuViQDbbWXycQkQ0SGDanj0dBuNYg53kMktQ2BmiX0F7tCVxiXb9qcmfbWaiesf5T5hYbXNKO9zKdxse_Thxcm89msXpYnHcvobyPOWmpRUDb8RXgkifCgoUlqSCA.aDrZe06FrmiyxATtmW4VqTSRP9RTLI1Yuge2RAVW6NU&dib_tag=se&keywords=Celular+Xiaomi+Poco+X8+5g+256gb+Dual+Sim+8gb+Ram+Preto&qid=1794608807&sr=8-5&ufe=app_do%3Aamzn1.fos.95de73c3-5dda-43a7-bd1f-63af03b14751"
+    },
+    "amazonLowest": 1889.55,
+    "mlLowest": 2250.26
+  }
+]
