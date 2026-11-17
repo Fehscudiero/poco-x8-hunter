@@ -1,7 +1,8 @@
-// server.js - Servidor de Monitoramento de Elite Poco X8
+// server.js - Servidor de Monitoramento Híbrido Poco X8 (Nuvem + Local)
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const { scrapeAmazon } = require('./scrapers/amazon');
 const { scrapeMercadoLivre } = require('./scrapers/mercadolivre');
 const { processAndSort } = require('./scrapers/filter');
@@ -14,64 +15,53 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
+function getCachedLatest() {
+  try {
+    const p = path.join(__dirname, 'data', 'latest.json');
+    if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf-8')).items || [];
+  } catch (_) {}
+  return [];
+}
+
 app.get('/api/hunt', async (req, res) => {
   const query = 'Xiaomi Poco X8 5g 256gb Dual Sim 8gb Ram Preto';
-  console.log(`[HUNT ELITE] Caçando os MENORES preços para: "${query}"`);
+  console.log(`[HUNT] Executando varredura ao vivo para: "${query}"`);
 
-  // Varre múltiplos endpoints e ordenações (Menor Preço + Catálogos)
-  const [amzResult, ml1Result, ml2Result] = await Promise.allSettled([
-    scrapeAmazon('Xiaomi Poco X8 256GB preto'),
-    scrapeMercadoLivre('celular-xiaomi-poco-x8-5g-256gb-dual-sim-8gb-ram-preto'),
-    scrapeMercadoLivre('Poco X8 5G 256gb 8gb ram preto')
+  // Executa busca na Amazon e Mercado Livre
+  const [amzResult, mlResult] = await Promise.allSettled([
+    scrapeAmazon('Xiaomi Poco X8 5G 256GB preto'),
+    scrapeMercadoLivre('celular-xiaomi-poco-x8-5g-256gb-dual-sim-8gb-ram-preto')
   ]);
 
-  const rawAmz = amzResult.status === 'fulfilled' ? amzResult.value : [];
-  const rawMl1 = ml1Result.status === 'fulfilled' ? ml1Result.value : [];
-  const rawMl2 = ml2Result.status === 'fulfilled' ? ml2Result.value : [];
+  const liveAmz = amzResult.status === 'fulfilled' ? amzResult.value : [];
+  const liveMl = mlResult.status === 'fulfilled' ? mlResult.value : [];
+  const cachedItems = getCachedLatest();
 
-  // Garante que o anúncio verificado do catálogo MLB80561611 de R$ 2.190,00 esteja sempre presente
-  const verifiedDeals = [
-    {
-      id: 'mlb-verified-MLB80561611',
-      marketplace: 'Mercado Livre',
-      title: 'Celular Xiaomi Poco X8 5g 256gb Dual Sim 8gb Ram Preto',
-      price: 2190.00,
-      priceFormatted: 'R$ 2.190,00',
-      link: 'https://www.mercadolivre.com.br/celular-xiaomi-poco-x8-5g-256gb-dual-sim-8gb-ram-preto/p/MLB80561611?pdp_filters=item_id%3AMLB5506757585',
-      image: 'https://http2.mlstatic.com/D_Q_NP_2X_782011-MLA108656131726_032026-E.webp',
-      isFull: true,
-      badge: 'MELHOR PREÇO GOOGLE',
-      scrapedAt: new Date().toISOString()
-    }
-  ];
+  // Combina dados ao vivo com a base persistida mais recente
+  const combined = [...liveAmz, ...liveMl, ...cachedItems];
+  const unique = Array.from(new Map(combined.map(i => [i.link || i.id, i])).values());
+  const filtered = processAndSort(unique);
 
-  const allItems = [...rawAmz, ...rawMl1, ...rawMl2, ...verifiedDeals];
-  const uniqueItems = Array.from(new Map(allItems.map(i => [i.link || i.id, i])).values());
-  const strictlyFiltered = processAndSort(uniqueItems);
+  const amzValid = filtered.filter(i => i.marketplace === 'Amazon');
+  const mlValid = filtered.filter(i => i.marketplace === 'Mercado Livre');
+  const bestDeal = filtered.length ? filtered[0] : null;
 
-  const amzValid = strictlyFiltered.filter(i => i.marketplace === 'Amazon');
-  const mlValid = strictlyFiltered.filter(i => i.marketplace === 'Mercado Livre');
-
-  const amazonLowest = amzValid.length ? amzValid[0] : null;
-  const mlLowest = mlValid.length ? mlValid[0] : null;
-  const bestDeal = strictlyFiltered.length ? strictlyFiltered[0] : null;
-
-  saveHunt(query, bestDeal, amazonLowest, mlLowest, strictlyFiltered.length);
+  saveHunt(query, bestDeal, amzValid[0] || null, mlValid[0] || null, filtered.length);
 
   res.json({
     success: true,
     target: 'Xiaomi Poco X8 5G 256GB 8GB RAM Preto (100% Exclusivo)',
     timestamp: new Date().toISOString(),
     stats: {
-      totalFound: uniqueItems.length,
-      totalExactMatches: strictlyFiltered.length,
+      totalFound: unique.length,
+      totalExactMatches: filtered.length,
       amazonCount: amzValid.length,
       mlCount: mlValid.length
     },
     bestDeal,
-    amazonLowest,
-    mlLowest,
-    items: strictlyFiltered
+    amazonLowest: amzValid[0] || null,
+    mlLowest: mlValid[0] || null,
+    items: filtered
   });
 });
 

@@ -1,0 +1,38 @@
+name: Caçador de Preços Poco X8 24/7
+
+on:
+  schedule:
+    - cron: '0 */2 * * *' # Executa a cada 2 horas automaticamente
+  workflow_dispatch: # Permite disparo manual com 1 clique
+
+permissions:
+  contents: write
+
+jobs:
+  hunt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do Repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar Dependências e Google Chrome
+        run: |
+          npm ci || npm install
+          sudo apt-get update
+          sudo apt-get install -y google-chrome-stable || true
+
+      - name: Executar Caçada de Preços em Tempo Real
+        run: node scripts/cron-hunt.js
+
+      - name: Commitar e Publicar Dados Atualizados
+        run: |
+          git config --global user.name "Poco Hunter Bot"
+          git config --global user.email "bot@pocohunter.local"
+          git add data/latest.json data/history.json
+          git commit -m "chore(auto): atualizacao automatica de precos [skip ci]" || echo "Nenhuma mudanca de preco"
+          git push origin master || echo "Push ignorado"

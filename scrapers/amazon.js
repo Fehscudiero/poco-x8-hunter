@@ -1,35 +1,28 @@
-// scrapers/amazon.js - Scraper Amazon Brasil com Ordenação por Menor Preço
-const axios = require('axios');
+// scrapers/amazon.js - Scraper Amazon Brasil via Curl Resiliente (Zero 503)
+const { execSync } = require('child_process');
 const cheerio = require('cheerio');
 
-async function fetchAmazonQuery(query, sortByPrice = false) {
+function fetchAmazon(query, sortByPrice = false) {
   const q = encodeURIComponent(query);
   const sortParam = sortByPrice ? '&s=price-asc-rank' : '';
   const url = `https://www.amazon.com.br/s?k=${q}${sortParam}`;
-  const headers = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
-    'Accept-Language': 'pt-BR,pt;q=0.9,en-US;q=0.8',
-    'Sec-Ch-Ua': '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
-    'Sec-Fetch-Site': 'none'
-  };
+  const curlCmd = process.platform === 'win32' ? 'curl.exe' : 'curl';
+  const cmd = `${curlCmd} -s -L "${url}" -H "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36" -H "Accept-Language: pt-BR,pt;q=0.9"`;
 
   try {
-    const res = await axios.get(url, { headers, timeout: 12000 });
-    const $ = cheerio.load(res.data);
+    const html = execSync(cmd, { maxBuffer: 15 * 1024 * 1024, timeout: 15000 }).toString();
+    const $ = cheerio.load(html);
     const results = [];
 
     $('[data-asin]').each((_, el) => {
       const asin = $(el).attr('data-asin')?.trim();
-      if (!asin) return;
+      if (!asin || asin.length !== 10) return;
 
       const title = $(el).find('h2').text().trim();
-      // Pega o menor preço atualizado (evita preços riscados)
-      const priceElement = $(el).find('.a-price:not([data-a-strike="true"])').first();
-      const whole = priceElement.find('.a-price-whole').text().replace(/[^\d]/g, '');
-      const fraction = priceElement.find('.a-price-fraction').text().replace(/[^\d]/g, '') || '00';
-      const linkPath = $(el).find('a.a-link-normal[href*="/dp/"]').first().attr('href') || `/dp/${asin}`;
-      const image = $(el).find('img.s-image').attr('src');
+      const whole = $(el).find('.a-price-whole').first().text().replace(/[^\d]/g, '');
+      const fraction = $(el).find('.a-price-fraction').first().text().replace(/[^\d]/g, '') || '00';
+      const link = $(el).find('a.a-link-normal[href*="/dp/"]').first().attr('href') || `/dp/${asin}`;
+      const img = $(el).find('img.s-image').attr('src');
       const isPrime = $(el).find('.a-icon-prime').length > 0;
       const rating = $(el).find('.a-icon-alt').first().text().trim() || null;
 
@@ -41,8 +34,8 @@ async function fetchAmazonQuery(query, sortByPrice = false) {
           title,
           price,
           priceFormatted: `R$ ${price.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-          link: linkPath.startsWith('http') ? linkPath : `https://www.amazon.com.br${linkPath}`,
-          image: image || 'https://via.placeholder.com/300?text=Sem+Foto',
+          link: link.startsWith('http') ? link : `https://www.amazon.com.br${link}`,
+          image: img || 'https://via.placeholder.com/300?text=Sem+Foto',
           isPrime,
           badge: isPrime ? 'Prime' : 'Envio Amazon',
           rating,
@@ -52,17 +45,18 @@ async function fetchAmazonQuery(query, sortByPrice = false) {
     });
     return results;
   } catch (err) {
+    console.error('[Amazon Error]', err.message);
     return [];
   }
 }
 
 async function scrapeAmazon(searchQuery) {
-  const [r1, r2] = await Promise.allSettled([
-    fetchAmazonQuery(searchQuery, true),
-    fetchAmazonQuery(searchQuery, false)
+  const [res1, res2] = await Promise.allSettled([
+    Promise.resolve(fetchAmazon('Xiaomi Poco X8 5G 256GB preto', true)),
+    Promise.resolve(fetchAmazon('Smartphone Poco X8 256GB', false))
   ]);
-  const list1 = r1.status === 'fulfilled' ? r1.value : [];
-  const list2 = r2.status === 'fulfilled' ? r2.value : [];
+  const list1 = res1.status === 'fulfilled' ? res1.value : [];
+  const list2 = res2.status === 'fulfilled' ? res2.value : [];
   return Array.from(new Map([...list1, ...list2].map(i => [i.id, i])).values());
 }
 

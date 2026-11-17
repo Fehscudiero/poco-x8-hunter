@@ -47,7 +47,8 @@ async function triggerHunt() {
     const data = await res.json();
     allItems = data.items || [];
 
-    document.getElementById('lastUpdatedLabel').innerText = new Date().toLocaleTimeString('pt-BR');
+    const scanDate = new Date(data.timestamp || Date.now());
+    document.getElementById('lastUpdatedLabel').innerText = `${scanDate.toLocaleDateString('pt-BR')} às ${scanDate.toLocaleTimeString('pt-BR')}`;
     updateHighlights(data);
     applyFilters();
     loadHistory();
