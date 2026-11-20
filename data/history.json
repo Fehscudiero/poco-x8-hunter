@@ -194,5 +194,19 @@
     },
     "amazonLowest": null,
     "mlLowest": 2190
+  },
+  {
+    "id": "hunt-x8-1795198876538",
+    "timestamp": "2026-11-20T18:21:16.538Z",
+    "query": "Xiaomi Poco X8 5g 256gb Dual Sim 8gb Ram Preto",
+    "totalItems": 1,
+    "bestDeal": {
+      "title": "Celular Xiaomi Poco X8 5g 256gb Dual Sim 8gb Ram Preto",
+      "price": 2190,
+      "marketplace": "Mercado Livre",
+      "link": "https://www.mercadolivre.com.br/celular-xiaomi-poco-x8-5g-256gb-dual-sim-8gb-ram-preto/p/MLB80561611?pdp_filters=item_id%3AMLB5506757585"
+    },
+    "amazonLowest": null,
+    "mlLowest": 2190
   }
 ]
